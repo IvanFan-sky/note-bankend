@@ -68,8 +68,18 @@ public class TagServiceImpl extends ServiceImpl<TagMapper, Tag> implements TagSe
      */
     @Override
     public List<Tag> getTagsByNoteId(Long noteId) {
-        // 调用Mapper的自定义查询方法
         return baseMapper.selectTagsByNoteId(noteId);
+    }
+
+    /**
+     * 获取文档关联的标签列表
+     *
+     * @param documentId 文档ID
+     * @return 标签列表
+     */
+    @Override
+    public List<Tag> getTagsByDocumentId(Long documentId) {
+        return baseMapper.selectTagsByDocumentId(documentId);
     }
 
     /**

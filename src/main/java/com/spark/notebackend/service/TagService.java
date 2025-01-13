@@ -39,4 +39,12 @@ public interface TagService extends IService<Tag> {
      * @param tagIds 标签ID列表
      */
     void setNoteTags(Long noteId, List<Long> tagIds);
+
+    /**
+     * 获取文档关联的标签列表
+     *
+     * @param documentId 文档ID
+     * @return 标签列表
+     */
+    List<Tag> getTagsByDocumentId(Long documentId);
 } 

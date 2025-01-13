@@ -24,4 +24,12 @@ public interface TagMapper extends BaseMapper<Tag> {
             "INNER JOIN t_note_tag nt ON t.id = nt.tag_id " +
             "WHERE nt.note_id = #{noteId} AND t.deleted = 0")
     List<Tag> selectTagsByNoteId(@Param("noteId") Long noteId);
+
+    /**
+     * 根据文档ID查询关联的标签列表
+     */
+    @Select("SELECT t.* FROM t_tag t " +
+            "INNER JOIN t_document_tag dt ON t.id = dt.tag_id " +
+            "WHERE dt.document_id = #{documentId} AND t.deleted = 0")
+    List<Tag> selectTagsByDocumentId(@Param("documentId") Long documentId);
 } 

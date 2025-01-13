@@ -28,7 +28,7 @@ public class Knife4jConfig {
         return new Docket(DocumentationType.SWAGGER_2)
                 .apiInfo(apiInfo())
                 .select()
-                .apis(RequestHandlerSelectors.basePackage("com.spark.controller"))
+                .apis(RequestHandlerSelectors.basePackage("com.spark.notebackend.controller"))
                 .paths(PathSelectors.any())
                 .build();
     }

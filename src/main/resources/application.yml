@@ -57,3 +57,14 @@ mybatis-plus:
       logic-not-delete-value: 0
     # 是否显示banner
     banner: false
+
+
+# Knife4j配置
+knife4j:
+  # 是否启用Knife4j
+  enable: true
+  setting:
+    # 语言
+    language: zh-CN
+  # 是否为生产环境
+  production: false

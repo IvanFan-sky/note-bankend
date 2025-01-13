@@ -4,10 +4,13 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.spark.notebackend.common.api.Result;
 import com.spark.notebackend.entity.User;
 import com.spark.notebackend.service.UserService;
+import com.spark.notebackend.model.dto.UserDTO;
+import com.spark.notebackend.model.vo.UserVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.BeanUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -39,13 +42,21 @@ public class UserController {
 
     @GetMapping("/{id}")
     @ApiOperation("根据ID查询用户")
-    public Result<User> getById(@ApiParam("用户ID") @PathVariable Long id) {
-        return Result.success(userService.getById(id));
+    public Result<UserVO> getById(@ApiParam("用户ID") @PathVariable Long id) {
+        User user = userService.getById(id);
+        if (user == null) {
+            return Result.fail("用户不存在");
+        }
+        UserVO vo = new UserVO();
+        BeanUtils.copyProperties(user, vo);
+        return Result.success(vo);
     }
 
     @PostMapping
     @ApiOperation("创建用户")
-    public Result<Boolean> save(@RequestBody @Validated User user) {
+    public Result<Boolean> save(@RequestBody @Validated UserDTO userDTO) {
+        User user = new User();
+        BeanUtils.copyProperties(userDTO, user);
         return Result.success(userService.save(user));
     }
 
@@ -53,7 +64,9 @@ public class UserController {
     @ApiOperation("更新用户")
     public Result<Boolean> update(
             @ApiParam("用户ID") @PathVariable Long id,
-            @RequestBody @Validated User user) {
+            @RequestBody @Validated UserDTO userDTO) {
+        User user = new User();
+        BeanUtils.copyProperties(userDTO, user);
         user.setId(id);
         return Result.success(userService.updateById(user));
     }

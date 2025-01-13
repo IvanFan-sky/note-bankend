@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.spark.notebackend.common.api.Result;
 import com.spark.notebackend.entity.Note;
 import com.spark.notebackend.model.dto.NoteDTO;
+import com.spark.notebackend.model.dto.NoteQueryDTO;
 import com.spark.notebackend.model.vo.NoteVO;
 import com.spark.notebackend.model.vo.TagVO;
 import com.spark.notebackend.service.NoteService;
@@ -121,5 +122,36 @@ public class NoteController {
     @ApiOperation("切换笔记置顶状态")
     public Result<Boolean> toggleTop(@ApiParam("笔记ID") @PathVariable Long id) {
         return Result.success(noteService.toggleTop(id));
+    }
+
+    /**
+     * 高级查询笔记
+     * 支持多条件组合查询、标签过滤、自定义排序等
+     *
+     * @param current  当前页码
+     * @param size     每页大小
+     * @param queryDTO 查询参数
+     * @return 分页结果
+     */
+    @PostMapping("/query")
+    @ApiOperation("高级查询笔记")
+    public Result<Page<NoteVO>> advancedQuery(
+            @ApiParam("页码") @RequestParam(defaultValue = "1") long current,
+            @ApiParam("每页数量") @RequestParam(defaultValue = "10") long size,
+            @RequestBody NoteQueryDTO queryDTO) {
+        Page<Note> page = new Page<>(current, size);
+        Page<Note> notePage = noteService.advancedQuery(page, queryDTO);
+        
+        // 转换为VO对象
+        Page<NoteVO> voPage = BeanCopyUtils.copyBeanPage(notePage, NoteVO.class);
+        // 为每个笔记加载关联的标签信息
+        voPage.getRecords().forEach(vo -> 
+            vo.setTags(BeanCopyUtils.copyBeanList(
+                tagService.getTagsByNoteId(vo.getId()), 
+                TagVO.class
+            ))
+        );
+        
+        return Result.success(voPage);
     }
 } 

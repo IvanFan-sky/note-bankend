@@ -3,6 +3,7 @@ package com.spark.notebackend.service;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.spark.notebackend.entity.Note;
+import com.spark.notebackend.model.dto.NoteQueryDTO;
 
 /**
  * @Author spark
@@ -21,6 +22,15 @@ public interface NoteService extends IService<Note> {
      * @return 分页结果
      */
     Page<Note> pageNotes(Page<Note> page, Long userId, String title, Integer noteType);
+
+    /**
+     * 高级查询笔记
+     *
+     * @param page    分页参数
+     * @param queryDTO 查询参数
+     * @return 分页结果
+     */
+    Page<Note> advancedQuery(Page<Note> page, NoteQueryDTO queryDTO);
 
     /**
      * 切换笔记置顶状态

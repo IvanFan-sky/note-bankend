@@ -123,4 +123,20 @@ public class TagController {
         tagService.setNoteTags(noteId, tagIds);
         return Result.success();
     }
+
+    /**
+     * 批量查询标签
+     * 根据标签ID列表查询标签详细信息
+     *
+     * @param tagIds 标签ID列表
+     * @return 标签列表
+     */
+    @PostMapping("/batch")
+    @ApiOperation("批量查询标签")
+    public Result<List<TagVO>> batchQuery(
+            @ApiParam("标签ID列表") @RequestBody List<Long> tagIds) {
+        List<Tag> tags = tagService.listByIds(tagIds);
+        List<TagVO> vos = BeanCopyUtils.copyBeanList(tags, TagVO.class);
+        return Result.success(vos);
+    }
 } 

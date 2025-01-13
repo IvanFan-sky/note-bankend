@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.spark.notebackend.entity.Tag;
 
 import java.util.List;
+import java.util.Collection;
 
 /**
  * @Author spark
@@ -16,9 +17,9 @@ public interface TagService extends IService<Tag> {
     /**
      * 分页查询标签
      *
-     * @param page     分页参数
-     * @param userId   用户ID(可选)
-     * @param tagName  标签名(可选)
+     * @param page    分页参数
+     * @param userId  用户ID(可选)
+     * @param tagName 标签名(可选)
      * @return 分页结果
      */
     Page<Tag> pageTags(Page<Tag> page, Long userId, String tagName);

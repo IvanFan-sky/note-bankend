@@ -36,11 +36,11 @@ public class TagServiceImpl extends ServiceImpl<TagMapper, Tag> implements TagSe
      *
      * @param page    分页参数对象
      * @param userId  用户ID过滤条件（可选）
-     * @param tagName 标签名称过滤条件（可选）
+     * @param name 标签名称过滤条件（可选）
      * @return 分页查询结果
      */
     @Override
-    public Page<Tag> pageTags(Page<Tag> page, Long userId, String tagName) {
+    public Page<Tag> pageTags(Page<Tag> page, Long userId, String name) {
         // 构建查询条件
         LambdaQueryWrapper<Tag> wrapper = new LambdaQueryWrapper<>();
         
@@ -49,8 +49,8 @@ public class TagServiceImpl extends ServiceImpl<TagMapper, Tag> implements TagSe
             wrapper.eq(Tag::getUserId, userId);
         }
         // 按标签名称模糊查询
-        if (StringUtils.hasText(tagName)) {
-            wrapper.like(Tag::getTagName, tagName);
+        if (StringUtils.hasText(name)) {
+            wrapper.like(Tag::getName, name);
         }
         
         // 按创建时间降序排序

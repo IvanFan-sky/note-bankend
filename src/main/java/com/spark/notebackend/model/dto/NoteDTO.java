@@ -31,6 +31,10 @@ public class NoteDTO {
     @NotBlank(message = "笔记内容不能为空")
     private String content;
 
+    @ApiModelProperty("笔记摘要，选填")
+    @Size(max = 200, message = "摘要长度不能超过200个字符")
+    private String summary;
+
     @ApiModelProperty("笔记类型(0-普通笔记,1-Markdown)")
     @NotNull(message = "笔记类型不能为空")
     private Integer noteType;

@@ -5,13 +5,14 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
  * @Author spark
- * @Create 2025-01-13 20:30
+ * @Create 2025-01-14 00:45
  * @Version 1.0
  * @Description 标签实体类
  */
@@ -32,23 +33,30 @@ public class Tag implements Serializable {
     private Long userId;
 
     @ApiModelProperty("标签名称")
-    @TableField("tag_name")
-    private String tagName;
+    @TableField("name")
+    private String name;
 
     @ApiModelProperty("标签颜色")
     @TableField("color")
     private String color;
 
+    @ApiModelProperty("标签描述")
+    @TableField("description")
+    private String description;
+
     @ApiModelProperty("创建时间")
     @TableField(value = "create_time", fill = FieldFill.INSERT)
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createTime;
 
     @ApiModelProperty("更新时间")
     @TableField(value = "update_time", fill = FieldFill.INSERT_UPDATE)
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime updateTime;
 
     @ApiModelProperty("逻辑删除标识(0-正常,1-已删除)")
     @TableLogic
     @TableField("deleted")
     private Boolean deleted;
-} 
+
+}

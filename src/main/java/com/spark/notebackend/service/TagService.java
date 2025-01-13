@@ -19,10 +19,10 @@ public interface TagService extends IService<Tag> {
      *
      * @param page    分页参数
      * @param userId  用户ID(可选)
-     * @param tagName 标签名(可选)
+     * @param name 标签名(可选)
      * @return 分页结果
      */
-    Page<Tag> pageTags(Page<Tag> page, Long userId, String tagName);
+    Page<Tag> pageTags(Page<Tag> page, Long userId, String name);
 
     /**
      * 根据笔记ID查询关联的标签列表

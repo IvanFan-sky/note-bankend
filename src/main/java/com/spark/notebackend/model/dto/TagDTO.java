@@ -26,7 +26,7 @@ public class TagDTO {
     @ApiModelProperty("标签名称")
     @NotBlank(message = "标签名称不能为空")
     @Size(max = 20, message = "标签名称长度不能超过20个字符")
-    private String tagName;
+    private String name;
 
     @ApiModelProperty("标签颜色")
     @Pattern(regexp = "^#[0-9a-fA-F]{6}$", message = "颜色格式必须是十六进制颜色码，如#FF0000")

@@ -1,7 +1,7 @@
 package com.spark.notebackend.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.spark.notebackend.common.api.ErrorCode;
 import com.spark.notebackend.common.exception.BusinessException;
@@ -18,19 +18,17 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 /**
  * @Author spark
- * @Create 2025-01-13 23:50
+ * @Create 2025-01-14 01:15
  * @Version 1.0
- * @Description 文档共享服务实现类
+ * @Description 文档分享服务实现类
  */
 @Service
 @RequiredArgsConstructor
@@ -50,134 +48,91 @@ public class DocumentShareServiceImpl extends ServiceImpl<DocumentShareMapper, D
             throw new BusinessException(ErrorCode.NOT_FOUND, "文档不存在");
         }
 
-        // 删除原有的共享记录
-        LambdaQueryWrapper<DocumentShare> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(DocumentShare::getDocumentId, shareDTO.getDocumentId())
-               .in(DocumentShare::getUserId, shareDTO.getUserIds());
-        this.remove(wrapper);
+        // 创建分享记录
+        DocumentShare share = new DocumentShare();
+        share.setDocumentId(shareDTO.getDocumentId());
+        share.setFromUserId(shareDTO.getFromUserId());
+        share.setToUserId(shareDTO.getToUserId());
+        share.setShareType(shareDTO.getShareType());
+        share.setSharePermission(shareDTO.getSharePermission());
+        share.setShareStatus(0); // 初始状态：待接受
+        share.setExpireTime(shareDTO.getExpireTime());
 
-        // 创建新的共享记录
-        List<DocumentShare> shares = shareDTO.getUserIds().stream()
-                .map(userId -> {
-                    DocumentShare share = new DocumentShare();
-                    share.setDocumentId(shareDTO.getDocumentId());
-                    share.setUserId(userId);
-                    share.setPermission(shareDTO.getPermission());
-                    return share;
-                }).collect(Collectors.toList());
+        this.save(share);
+    }
 
-        // 批量保存共享记录
-        this.saveBatch(shares);
+    @Override
+    public Page<DocumentShareVO> getSharesByUserId(Page<DocumentShare> page, Long userId, Integer shareType) {
+        // 查询分享记录
+        Page<DocumentShare> sharePage = this.page(page, new LambdaQueryWrapper<DocumentShare>()
+                .eq(DocumentShare::getToUserId, userId)
+                .eq(shareType != null, DocumentShare::getShareType, shareType)
+                .orderByDesc(DocumentShare::getCreateTime));
+
+        // 转换为VO
+        Page<DocumentShareVO> voPage = new Page<>();
+        BeanUtils.copyProperties(sharePage, voPage, "records");
+        
+        List<DocumentShareVO> voList = sharePage.getRecords().stream()
+                .map(this::convertToVO)
+                .collect(Collectors.toList());
+        
+        voPage.setRecords(voList);
+        return voPage;
+    }
+
+    @Override
+    public List<DocumentShareVO> getSharesByDocumentId(Long documentId) {
+        List<DocumentShare> shares = this.list(new LambdaQueryWrapper<DocumentShare>()
+                .eq(DocumentShare::getDocumentId, documentId));
+        
+        return shares.stream()
+                .map(this::convertToVO)
+                .collect(Collectors.toList());
     }
 
     @CacheEvict(value = {"document_share"}, allEntries = true)
     @Override
-    public void cancelShare(Long documentId, Long userId) {
-        LambdaQueryWrapper<DocumentShare> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(DocumentShare::getDocumentId, documentId)
-               .eq(DocumentShare::getUserId, userId);
-        this.remove(wrapper);
-    }
-
-    @Cacheable(key = "'doc_shares_' + #documentId")
-    @Override
-    public List<DocumentShareVO> getDocumentShares(Long documentId) {
-        List<DocumentShare> shares = baseMapper.selectSharesByDocumentId(documentId);
-        Document document = documentMapper.selectById(documentId);
-        
-        return shares.stream().map(share -> {
-            DocumentShareVO vo = new DocumentShareVO();
-            BeanUtils.copyProperties(share, vo);
-            // 设置文档名称
-            if (document != null) {
-                vo.setDocName(document.getDocName());
-            }
-            // 设置用户名称
-            User user = userService.getById(share.getUserId());
-            if (user != null) {
-                vo.setUsername(user.getUsername());
-            }
-            return vo;
-        }).collect(Collectors.toList());
-    }
-
-    @Cacheable(key = "'user_shares_' + #userId")
-    @Override
-    public List<DocumentShareVO> getUserShares(Long userId) {
-        List<DocumentShare> shares = baseMapper.selectSharesByUserId(userId);
-        // 获取用户信息
-        User user = userService.getById(userId);
-        
-        return shares.stream().map(share -> {
-            DocumentShareVO vo = new DocumentShareVO();
-            BeanUtils.copyProperties(share, vo);
-            // 设置用户名称
-            if (user != null) {
-                vo.setUsername(user.getUsername());
-            }
-            // 设置文档名称
-            Document document = documentMapper.selectById(share.getDocumentId());
-            if (document != null) {
-                vo.setDocName(document.getDocName());
-            }
-            return vo;
-        }).collect(Collectors.toList());
-    }
-
-    @CacheEvict(value = {"document_share"}, allEntries = true)
-    @Override
-    public boolean updatePermission(Long documentId, Long userId, Integer permission) {
-        LambdaUpdateWrapper<DocumentShare> wrapper = new LambdaUpdateWrapper<>();
-        wrapper.eq(DocumentShare::getDocumentId, documentId)
-               .eq(DocumentShare::getUserId, userId)
-               .set(DocumentShare::getPermission, permission);
-        return this.update(wrapper);
+    public boolean updateShareStatus(Long shareId, Integer shareStatus) {
+        DocumentShare share = new DocumentShare();
+        share.setId(shareId);
+        share.setShareStatus(shareStatus);
+        return this.updateById(share);
     }
 
     @Override
-    public boolean hasPermission(Long documentId, Long userId) {
-        if (userId == null) {
-            return false;
-        }
-        
-        Document document = documentMapper.selectById(documentId);
-        if (document == null) {
-            return false;
-        }
-        
-        // 文档所有者有权限
-        if (document.getUserId().equals(userId)) {
-            return true;
-        }
-        
-        // 公开文档所有人都有权限
-        if (document.getAccessLevel() == 2) {
-            return true;
-        }
-        
-        // 检查共享权限
-        Integer permission = baseMapper.selectPermission(documentId, userId);
-        return permission != null;
+    public boolean hasSharePermission(Long documentId, Long userId) {
+        return this.count(new LambdaQueryWrapper<DocumentShare>()
+                .eq(DocumentShare::getDocumentId, documentId)
+                .eq(DocumentShare::getToUserId, userId)
+                .eq(DocumentShare::getShareStatus, 1)) > 0; // 已接受的分享
     }
 
-    @Override
-    public boolean hasEditPermission(Long documentId, Long userId) {
-        if (userId == null) {
-            return false;
+    /**
+     * 将DocumentShare转换为DocumentShareVO
+     */
+    private DocumentShareVO convertToVO(DocumentShare share) {
+        DocumentShareVO vo = new DocumentShareVO();
+        BeanUtils.copyProperties(share, vo);
+
+        // 设置文档名称
+        Document document = documentMapper.selectById(share.getDocumentId());
+        if (document != null) {
+            vo.setDocumentName(document.getDocName());
         }
-        
-        Document document = documentMapper.selectById(documentId);
-        if (document == null) {
-            return false;
+
+        // 设置分享者名称
+        User fromUser = userService.getById(share.getFromUserId());
+        if (fromUser != null) {
+            vo.setFromUsername(fromUser.getUsername());
         }
-        
-        // 文档所有者有编辑权限
-        if (document.getUserId().equals(userId)) {
-            return true;
+
+        // 设置接收者名称
+        User toUser = userService.getById(share.getToUserId());
+        if (toUser != null) {
+            vo.setToUsername(toUser.getUsername());
         }
-        
-        // 检查共享编辑权限
-        Integer permission = baseMapper.selectPermission(documentId, userId);
-        return permission != null && permission == 1;
+
+        return vo;
     }
 } 

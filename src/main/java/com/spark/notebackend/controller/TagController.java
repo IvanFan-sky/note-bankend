@@ -39,9 +39,9 @@ public class TagController {
             @ApiParam("页码") @RequestParam(defaultValue = "1") long current,
             @ApiParam("每页数量") @RequestParam(defaultValue = "10") long size,
             @ApiParam("用户ID") @RequestParam(required = false) Long userId,
-            @ApiParam("标签名") @RequestParam(required = false) String tagName) {
+            @ApiParam("标签名") @RequestParam(required = false) String name) {
         Page<Tag> page = new Page<>(current, size);
-        Page<Tag> tagPage = tagService.pageTags(page, userId, tagName);
+        Page<Tag> tagPage = tagService.pageTags(page, userId, name);
         
         // 使用工具类转换
         Page<TagVO> voPage = BeanCopyUtils.copyBeanPage(tagPage, TagVO.class);

@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -39,6 +40,10 @@ public class Note implements Serializable {
     @TableField("content")
     private String content;
 
+    @ApiModelProperty("笔记摘要，选填")
+    @TableField("summary")
+    private String summary;
+
     @ApiModelProperty("笔记类型(0-普通笔记,1-Markdown)")
     @TableField("note_type")
     private Integer noteType;
@@ -49,10 +54,12 @@ public class Note implements Serializable {
 
     @ApiModelProperty("创建时间")
     @TableField(value = "create_time", fill = FieldFill.INSERT)
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createTime;
 
     @ApiModelProperty("更新时间")
     @TableField(value = "update_time", fill = FieldFill.INSERT_UPDATE)
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime updateTime;
 
     @ApiModelProperty("逻辑删除标识(0-正常,1-已删除)")

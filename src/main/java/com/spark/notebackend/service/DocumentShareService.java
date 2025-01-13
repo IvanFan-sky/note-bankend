@@ -1,5 +1,6 @@
 package com.spark.notebackend.service;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.spark.notebackend.entity.DocumentShare;
 import com.spark.notebackend.model.dto.DocumentShareDTO;
@@ -9,68 +10,52 @@ import java.util.List;
 
 /**
  * @Author spark
- * @Create 2025-01-13 23:48
+ * @Create 2025-01-14 01:20
  * @Version 1.0
- * @Description 文档共享服务接口
+ * @Description 文档分享服务接口
  */
 public interface DocumentShareService extends IService<DocumentShare> {
 
     /**
-     * 共享文档给指定用户
+     * 分享文档给指定用户
      *
-     * @param shareDTO 共享信息
+     * @param shareDTO 分享信息
      */
     void shareDocument(DocumentShareDTO shareDTO);
 
     /**
-     * 取消文档共享
+     * 获取用户收到的分享
      *
-     * @param documentId 文档ID
-     * @param userId     用户ID
+     * @param page      分页参数
+     * @param userId    用户ID
+     * @param shareType 分享类型(0-个人,1-群组)
+     * @return 分页结果
      */
-    void cancelShare(Long documentId, Long userId);
+    Page<DocumentShareVO> getSharesByUserId(Page<DocumentShare> page, Long userId, Integer shareType);
 
     /**
-     * 获取文档的共享用户列表
+     * 获取文档的分享记录
      *
      * @param documentId 文档ID
-     * @return 共享信息列表
+     * @return 分享记录列表
      */
-    List<DocumentShareVO> getDocumentShares(Long documentId);
+    List<DocumentShareVO> getSharesByDocumentId(Long documentId);
 
     /**
-     * 获取用户的共享文档列表
+     * 更新分享状态
      *
-     * @param userId 用户ID
-     * @return 共享信息列表
-     */
-    List<DocumentShareVO> getUserShares(Long userId);
-
-    /**
-     * 更新共享权限
-     *
-     * @param documentId 文档ID
-     * @param userId     用户ID
-     * @param permission 新的权限
+     * @param shareId     分享ID
+     * @param shareStatus 分享状态(0-待接受,1-已接受,2-已拒绝)
      * @return 是否更新成功
      */
-    boolean updatePermission(Long documentId, Long userId, Integer permission);
+    boolean updateShareStatus(Long shareId, Integer shareStatus);
 
     /**
-     * 验证用户是否有权限访问文档
+     * 检查用户是否有文档的分享权限
      *
      * @param documentId 文档ID
      * @param userId     用户ID
      * @return 是否有权限
      */
-    boolean hasPermission(Long documentId, Long userId);
-
-    /**
-     * 验证用户是否有编辑权限
-     *
-     * @param documentId 文档ID
-     * @param userId     用户ID
-     * @return 是否有编辑权限
-     */
-    boolean hasEditPermission(Long documentId, Long userId);
+    boolean hasSharePermission(Long documentId, Long userId);
 } 

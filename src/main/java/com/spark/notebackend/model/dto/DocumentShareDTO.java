@@ -4,28 +4,41 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import javax.validation.constraints.Future;
 import javax.validation.constraints.NotNull;
-import java.util.List;
+import java.time.LocalDateTime;
 
 /**
  * @Author spark
- * @Create 2025-01-13 23:45
+ * @Create 2025-01-14 01:25
  * @Version 1.0
- * @Description 文档共享请求对象
+ * @Description 文档分享数据传输对象
  */
 @Data
-@ApiModel(value = "DocumentShareDTO", description = "文档共享请求")
+@ApiModel(value = "DocumentShareDTO", description = "文档分享请求")
 public class DocumentShareDTO {
 
     @ApiModelProperty("文档ID")
     @NotNull(message = "文档ID不能为空")
     private Long documentId;
 
-    @ApiModelProperty("共享用户ID列表")
-    @NotNull(message = "共享用户不能为空")
-    private List<Long> userIds;
+    @ApiModelProperty("分享者ID")
+    @NotNull(message = "分享者ID不能为空")
+    private Long fromUserId;
 
-    @ApiModelProperty("共享权限(0-只读,1-可编辑)")
-    @NotNull(message = "共享权限不能为空")
-    private Integer permission;
+    @ApiModelProperty("接收者ID")
+    @NotNull(message = "接收者ID不能为空")
+    private Long toUserId;
+
+    @ApiModelProperty("分享类型(0-个人,1-群组)")
+    @NotNull(message = "分享类型不能为空")
+    private Integer shareType;
+
+    @ApiModelProperty("分享权限(0-只读,1-可编辑)")
+    @NotNull(message = "分享权限不能为空")
+    private Integer sharePermission;
+
+    @ApiModelProperty("过期时间")
+    @Future(message = "过期时间必须是将来时间")
+    private LocalDateTime expireTime;
 } 
